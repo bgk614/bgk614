@@ -5,20 +5,21 @@
 const fs = require('fs');
 
 const LINE_WIDTH = 55; // 오른쪽 텍스트 영역 너비
+const GAP_WIDTH = 20; // ASCII 아트와 텍스트 사이 간격
 
 // ASCII 아트 (각 줄)
 const ASCII_ART = [
-  '        _)/_               ',
-  "       (_' <               ",
-  '         )(_               ',
-  "   ,--.''-`'.              ",
-  "  :.'  :  =- :             ",
-  '  |:   | ._|]|             ',
-  '  |____|_____|             ',
-  ' /.:. /-_-_/               ',
-  '(.:: / |=|                 ',
-  " `--'  |=|                 ",
-  '       |=| Hi,There        ',
+  '        _)/_       ',
+  "       (_' <       ",
+  '         )(_       ',
+  "   ,--.''-`'.      ",
+  "  :.'  :  =- :     ",
+  '  |:   | ._|]|     ',
+  '  |____|_____|     ',
+  ' /.:. /-_-_/       ',
+  '(.:: / |=|         ',
+  " `--'  |=|         ",
+  '       |=| Hi,There',
 ];
 
 /**
@@ -61,6 +62,7 @@ function separator() {
 function combineWithAscii(textLines) {
   const artWidth = ASCII_ART[0].length;
   const emptyArt = ' '.repeat(artWidth);
+  const gap = ' '.repeat(GAP_WIDTH);
   const maxLines = Math.max(ASCII_ART.length, textLines.length);
   const artOffset = maxLines - ASCII_ART.length; // 아트를 아래로 밀기 위한 오프셋
 
@@ -69,7 +71,7 @@ function combineWithAscii(textLines) {
     const artIndex = i - artOffset;
     const artLine = artIndex >= 0 ? ASCII_ART[artIndex] : emptyArt;
     const textLine = textLines[i] || '';
-    result.push(artLine + textLine);
+    result.push(artLine + gap + textLine);
   }
   return result.join('\n');
 }
