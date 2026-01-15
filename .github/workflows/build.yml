@@ -13,6 +13,9 @@ on:
     # 매일 UTC 18:00에 실행 (한국시간 03:00)
     - cron: "0 18 * * *"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
