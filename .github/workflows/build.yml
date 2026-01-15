@@ -1,0 +1,47 @@
+# =============================================================================
+# GitHub README 자동 업데이트 워크플로우
+# - 매일 UTC 18:00 (한국시간 03:00)에 자동 실행
+# - main 브랜치에 푸시될 때도 실행
+# =============================================================================
+name: README build
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    # 매일 UTC 18:00에 실행 (한국시간 03:00)
+    - cron: "0 18 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 저장소 체크아웃 (최신 커밋만 가져옴)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Node.js 20 환경 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # README 파일 업데이트 스크립트 실행
+      - name: Update README file
+        env:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }} # GitHub API 인증 토큰
+          USER_NAME: ${{ secrets.USER_NAME }} # GitHub 사용자명
+        run: node update_readme.js
+
+      # 변경사항 커밋 및 푸시
+      - name: Commit
+        if: github.actor != 'github-actions[bot]'
+        run: |-
+          git add README.md
+          git diff
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git commit -m "Updated README" -a || echo "No changes to commit"
+          git push

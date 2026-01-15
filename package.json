@@ -1,0 +1,14 @@
+{
+  "name": "github-profile-readme",
+  "version": "1.0.0",
+  "description": "GitHub 프로필 README 자동 생성 스크립트",
+  "main": "update_readme.js",
+  "scripts": {
+    "start": "node update_readme.js"
+  },
+  "keywords": ["github", "profile", "readme"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
