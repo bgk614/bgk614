@@ -121,10 +121,62 @@ function updateReadme(stats) {
     separator(),
   ];
 
+  // 오픈소스 PR 섹션 (별도 영역)
+  const ossPRs = stats.openSourcePRs;
+
+  // 레포별로 PR 그룹화
+  const allPRs = [
+    ...ossPRs.open.map((pr) => ({ ...pr, status: '~' })),
+    ...ossPRs.merged.map((pr) => ({ ...pr, status: '✓' })),
+    ...ossPRs.closed.map((pr) => ({ ...pr, status: 'x' })),
+  ];
+
+  const prsByRepo = {};
+  for (const pr of allPRs) {
+    if (!prsByRepo[pr.repo]) {
+      prsByRepo[pr.repo] = [];
+    }
+    prsByRepo[pr.repo].push(pr);
+  }
+
+  // PR 목록 생성
+  let prList = '';
+  for (const [repo, prs] of Object.entries(prsByRepo)) {
+    prList += `\n${repo}\n`;
+    for (const pr of prs) {
+      prList += `  ${pr.status} #${pr.number} ${pr.title}\n`;
+    }
+  }
+
+  // 오픈소스 PR용 짧은 너비
+  const shortWidth = 40;
+  const padLineShort = (label, value) => {
+    const dotsLen = shortWidth - label.length - value.length;
+    return `${label}${'·'.repeat(Math.max(0, dotsLen))}${value}`;
+  };
+  const sectionHeaderShort = (title) => {
+    const dashes = '-'.repeat(Math.max(0, shortWidth - title.length - 1));
+    return `${title} ${dashes}`;
+  };
+
+  const shortSeparator = '-'.repeat(shortWidth);
+
+  const ossPRSection = `
+${sectionHeaderShort('- Open Source PRs')}
+${padLineShort('~ In Progress:', String(ossPRs.open.length))}
+${padLineShort('✓ Merged:', String(ossPRs.merged.length))}
+${padLineShort('x Closed:', String(ossPRs.closed.length))}
+${shortSeparator}
+${prList}`;
+
+  // 전체 너비 구분선 (ASCII 아트 + 간격 + 텍스트)
+  const fullWidth = ASCII_ART[0].length + GAP_WIDTH + LINE_WIDTH;
+  const fullSeparator = '─'.repeat(fullWidth);
+
   const readme = `\`\`\`text
 ${combineWithAscii(textLines)}
-\`\`\`
-`;
+${fullSeparator}
+${ossPRSection}\`\`\``;
   fs.writeFileSync('README.md', readme, 'utf8');
   console.log('README.md 업데이트 완료!');
 }
