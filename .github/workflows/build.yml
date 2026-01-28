@@ -31,6 +31,19 @@ jobs:
         with:
           node-version: "20"
 
+      # node_modules 캐시
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+      # 의존성 설치 (캐시 미스 시에만)
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
       # 캐시 복원 (LOC, 오픈소스 PR 캐시)
       - name: Restore cache
         uses: actions/cache@v4
