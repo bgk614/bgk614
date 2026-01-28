@@ -139,7 +139,7 @@ const generateSvg = async (textLines) => {
   const textElements = textLines
     .map((line, i) => {
       const y = textStartY + (i + 1) * lineHeight;
-      return `    <text x="${textEndX}" y="${y}" fill="#1a1a1a" text-anchor="end">${escapeXml(line)}</text>`;
+      return `    <text x="${textEndX}" y="${y}" text-anchor="end">${escapeXml(line)}</text>`;
     })
     .join('\n');
 
@@ -203,10 +203,18 @@ const generateSvg = async (textLines) => {
     .icon {
       transform-origin: center;
     }
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #F7F8FA; }
+      text { fill: #1a1a1a; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #262C36; }
+      text { fill: #f0f0f0; }
+    }
     ${iconStyles}
     ${keyframes}
   </style>
-  <rect width="100%" height="100%" fill="#F7F8FA" rx="8"/>
+  <rect class="bg" width="100%" height="100%" rx="8"/>
 ${iconElements}
 ${textElements}
 </svg>`;
