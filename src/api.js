@@ -4,7 +4,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ACCESS_TOKEN, USER_NAME, GITHUB_API_URL } = require("./config");
+const {
+  ACCESS_TOKEN,
+  USER_NAME,
+  GITHUB_API_URL,
+  OPEN_SOURCE_REPOS,
+} = require('./config');
 
 // 캐시 파일 경로
 const CACHE_FILE = path.join(__dirname, '../cache/loc_cache.json');
@@ -21,10 +26,10 @@ const queryCount = {
  */
 async function simpleRequest(funcName, query, variables) {
   const response = await fetch(GITHUB_API_URL, {
-    method: "POST",
+    method: 'POST',
     headers: {
       Authorization: `token ${ACCESS_TOKEN}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -35,7 +40,7 @@ async function simpleRequest(funcName, query, variables) {
 
   const errorText = await response.text();
   throw new Error(
-    `${funcName} failed with status ${response.status}: ${errorText}`
+    `${funcName} failed with status ${response.status}: ${errorText}`,
   );
 }
 
@@ -56,7 +61,7 @@ async function getUserInfo() {
     }
   `;
 
-  const data = await simpleRequest("getUserInfo", query, { login: USER_NAME });
+  const data = await simpleRequest('getUserInfo', query, { login: USER_NAME });
   return data.data.user;
 }
 
@@ -81,14 +86,21 @@ async function graphReposStars(countType, ownerAffiliation, cursor = null) {
     }
   `;
 
-  const variables = { owner_affiliation: ownerAffiliation, login: USER_NAME, cursor };
-  const data = await simpleRequest("graphReposStars", query, variables);
+  const variables = {
+    owner_affiliation: ownerAffiliation,
+    login: USER_NAME,
+    cursor,
+  };
+  const data = await simpleRequest('graphReposStars', query, variables);
   const repos = data.data.user.repositories;
 
-  if (countType === "repos") {
+  if (countType === 'repos') {
     return repos.totalCount;
-  } else if (countType === "stars") {
-    return repos.edges.reduce((sum, edge) => sum + edge.node.stargazers.totalCount, 0);
+  } else if (countType === 'stars') {
+    return repos.edges.reduce(
+      (sum, edge) => sum + edge.node.stargazers.totalCount,
+      0,
+    );
   }
 
   return 0;
@@ -108,7 +120,9 @@ async function getContributedRepos() {
     }
   `;
 
-  const data = await simpleRequest("getContributedRepos", query, { login: USER_NAME });
+  const data = await simpleRequest('getContributedRepos', query, {
+    login: USER_NAME,
+  });
   return data.data.user.repositoriesContributedTo.totalCount;
 }
 
@@ -127,9 +141,14 @@ async function getTotalCommits() {
     }
   `;
 
-  const data = await simpleRequest("getTotalCommits", query, { login: USER_NAME });
+  const data = await simpleRequest('getTotalCommits', query, {
+    login: USER_NAME,
+  });
   const collection = data.data.user.contributionsCollection;
-  return collection.totalCommitContributions + collection.restrictedContributionsCount;
+  return (
+    collection.totalCommitContributions +
+    collection.restrictedContributionsCount
+  );
 }
 
 /**
@@ -152,7 +171,9 @@ async function getContributionStats() {
     }
   `;
 
-  const data = await simpleRequest("getContributionStats", query, { login: USER_NAME });
+  const data = await simpleRequest('getContributionStats', query, {
+    login: USER_NAME,
+  });
   const user = data.data.user;
 
   return {
@@ -202,8 +223,12 @@ async function getLinesOfCode() {
   const now = Date.now();
   const ONE_DAY = 24 * 60 * 60 * 1000;
 
-  if (cache && cache.timestamp && (now - cache.timestamp) < ONE_DAY) {
-    console.log('LOC 캐시 사용 (마지막 업데이트:', new Date(cache.timestamp).toISOString(), ')');
+  if (cache && cache.timestamp && now - cache.timestamp < ONE_DAY) {
+    console.log(
+      'LOC 캐시 사용 (마지막 업데이트:',
+      new Date(cache.timestamp).toISOString(),
+      ')',
+    );
     return { additions: cache.additions, deletions: cache.deletions };
   }
 
@@ -242,7 +267,10 @@ async function getLinesOfCode() {
   let deletions = 0;
 
   // 저장소 목록 가져오기
-  const repoData = await simpleRequest("getLinesOfCode", repoQuery, { login: USER_NAME, cursor: null });
+  const repoData = await simpleRequest('getLinesOfCode', repoQuery, {
+    login: USER_NAME,
+    cursor: null,
+  });
   const repos = repoData.data.user.repositories.edges;
 
   // 각 저장소의 커밋에서 LOC 계산
@@ -274,12 +302,13 @@ async function getLinesOfCode() {
     `;
 
     try {
-      const locData = await simpleRequest("getLinesOfCode", locQuery, {
+      const locData = await simpleRequest('getLinesOfCode', locQuery, {
         owner: repo.node.owner.login,
         name: repo.node.name,
       });
 
-      const history = locData.data.repository?.defaultBranchRef?.target?.history?.edges || [];
+      const history =
+        locData.data.repository?.defaultBranchRef?.target?.history?.edges || [];
       for (const commit of history) {
         if (commit.node.author?.user?.login === USER_NAME) {
           additions += commit.node.additions;
@@ -297,6 +326,134 @@ async function getLinesOfCode() {
   return { additions, deletions };
 }
 
+// 오픈소스 PR 캐시 파일 경로
+const OSS_PR_CACHE_FILE = path.join(__dirname, '../cache/oss_pr_cache.json');
+
+/**
+ * 오픈소스 PR 캐시 읽기
+ */
+function readOssPrCache() {
+  try {
+    if (fs.existsSync(OSS_PR_CACHE_FILE)) {
+      const data = fs.readFileSync(OSS_PR_CACHE_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (e) {
+    console.log('오픈소스 PR 캐시 읽기 실패');
+  }
+  return { merged: [], closed: [] };
+}
+
+/**
+ * 오픈소스 PR 캐시 저장
+ */
+function saveOssPrCache(data) {
+  try {
+    const cacheDir = path.dirname(OSS_PR_CACHE_FILE);
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true });
+    }
+    fs.writeFileSync(OSS_PR_CACHE_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.log('오픈소스 PR 캐시 저장 실패:', e.message);
+  }
+}
+
+/**
+ * 오픈소스 PR 조회 (포함 목록 방식 + 캐싱)
+ * - merged/closed PR은 캐시에서 가져옴
+ * - open PR만 API로 조회
+ * @returns {Promise<{open: Array, merged: Array, closed: Array}>}
+ */
+async function getOpenSourcePRs() {
+  const cache = readOssPrCache();
+
+  const query = `
+    query($login: String!, $cursor: String) {
+      user(login: $login) {
+        pullRequests(first: 100, after: $cursor, orderBy: {field: CREATED_AT, direction: DESC}) {
+          edges {
+            node {
+              number
+              title
+              url
+              state
+              merged
+              createdAt
+              repository {
+                nameWithOwner
+              }
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await simpleRequest('getOpenSourcePRs', query, {
+    login: USER_NAME,
+    cursor: null,
+  });
+  const prs = data.data.user.pullRequests.edges;
+
+  // 포함 목록에 있는 레포의 PR만 필터링
+  const openSourcePRs = prs.filter(({ node }) => {
+    return OPEN_SOURCE_REPOS.includes(node.repository.nameWithOwner);
+  });
+
+  // 상태별 분류
+  const result = {
+    open: [],
+    merged: [...cache.merged],
+    closed: [...cache.closed],
+  };
+
+  // 캐시된 PR 번호 Set
+  const cachedMergedNums = new Set(
+    cache.merged.map((pr) => `${pr.repo}#${pr.number}`),
+  );
+  const cachedClosedNums = new Set(
+    cache.closed.map((pr) => `${pr.repo}#${pr.number}`),
+  );
+
+  for (const { node } of openSourcePRs) {
+    const pr = {
+      number: node.number,
+      title: node.title,
+      url: node.url,
+      repo: node.repository.nameWithOwner,
+      createdAt: node.createdAt,
+    };
+    const prKey = `${pr.repo}#${pr.number}`;
+
+    if (node.state === 'OPEN') {
+      result.open.push(pr);
+    } else if (node.merged) {
+      // 캐시에 없으면 추가
+      if (!cachedMergedNums.has(prKey)) {
+        result.merged.push(pr);
+      }
+    } else {
+      // 캐시에 없으면 추가
+      if (!cachedClosedNums.has(prKey)) {
+        result.closed.push(pr);
+      }
+    }
+  }
+
+  // 캐시 업데이트 (merged/closed만 저장)
+  saveOssPrCache({
+    merged: result.merged,
+    closed: result.closed,
+  });
+
+  return result;
+}
+
 module.exports = {
   getUserInfo,
   graphReposStars,
@@ -304,5 +461,6 @@ module.exports = {
   getTotalCommits,
   getContributionStats,
   getLinesOfCode,
+  getOpenSourcePRs,
   queryCount,
 };

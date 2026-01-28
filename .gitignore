@@ -2,7 +2,7 @@
 node_modules/
 
 # Cache
-cache/loc_cache.json
+cache/
 
 # Environment
 .env

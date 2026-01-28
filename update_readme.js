@@ -3,13 +3,22 @@
  * GitHub Actions를 통해 매일 자동 실행됩니다.
  */
 
-const { validateEnv } = require("./src/config");
-const { getUserInfo, graphReposStars, getContributedRepos, getTotalCommits, getContributionStats, getLinesOfCode, queryCount } = require("./src/api");
-const { updateReadme } = require("./src/readme");
+const { validateEnv } = require('./src/config');
+const {
+  getUserInfo,
+  graphReposStars,
+  getContributedRepos,
+  getTotalCommits,
+  getContributionStats,
+  getLinesOfCode,
+  getOpenSourcePRs,
+  queryCount,
+} = require('./src/api');
+const { updateReadme } = require('./src/readme');
 
 async function main() {
   try {
-    console.log("GitHub 프로필 데이터 수집 시작...");
+    console.log('GitHub 프로필 데이터 수집 시작...');
 
     // 환경변수 검증
     validateEnv();
@@ -19,7 +28,7 @@ async function main() {
     console.log(`사용자: ${userInfo.name}`);
 
     // 저장소 및 스타 수 조회
-    const repos = await graphReposStars("repos", ["OWNER"]);
+    const repos = await graphReposStars('repos', ['OWNER']);
     const contributedRepos = await getContributedRepos();
 
     // 전체 커밋 수 조회
@@ -31,6 +40,12 @@ async function main() {
     // LOC 조회 (캐싱 적용)
     const loc = await getLinesOfCode();
 
+    // 오픈소스 PR 조회
+    const openSourcePRs = await getOpenSourcePRs();
+    console.log(
+      `오픈소스 PR: ${openSourcePRs.open.length} open, ${openSourcePRs.merged.length} merged, ${openSourcePRs.closed.length} closed`,
+    );
+
     // README 업데이트
     updateReadme({
       repos,
@@ -41,11 +56,12 @@ async function main() {
       openSourceContributions: contributionStats.openSourceContributions,
       additions: loc.additions,
       deletions: loc.deletions,
+      openSourcePRs,
     });
 
-    console.log("완료!", queryCount);
+    console.log('완료!', queryCount);
   } catch (error) {
-    console.error("에러 발생:", error.message);
+    console.error('에러 발생:', error.message);
     process.exit(1);
   }
 }
