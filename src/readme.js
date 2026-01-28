@@ -75,6 +75,10 @@ const updateReadme = async (stats) => {
   <source media="(prefers-color-scheme: dark)" srcset="assets/stats-dark.svg">
   <img alt="stats" src="assets/stats-light.svg">
 </picture>
+
+---
+
+### Open Source PRs
 ${prList}`;
 
   fs.writeFileSync('README.md', readme, 'utf8');
