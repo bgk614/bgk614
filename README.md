@@ -1,4 +1,7 @@
-![stats](assets/stats.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/stats-dark.svg">
+  <img alt="stats" src="assets/stats-light.svg">
+</picture>
 
 **colinhacks/zod**<br>
   ☐ [#5632](https://github.com/colinhacks/zod/pull/5632) fix: preserve context immutability in parse functions<br>
