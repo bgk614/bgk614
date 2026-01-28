@@ -15,9 +15,9 @@ const padLine = (label, value) => {
   const totalLen = LINE_WIDTH;
   const prefixedLabel = '. ' + label;
   const contentLen = prefixedLabel.length + value.length;
-  const dotsLen = totalLen - contentLen;
+  const dotsLen = totalLen - contentLen - 2;
   const dots = '·'.repeat(Math.max(0, dotsLen));
-  return `${prefixedLabel}${dots}${value}`;
+  return `${prefixedLabel} ${dots} ${value}`;
 };
 
 /**
@@ -136,10 +136,25 @@ const generateSvg = async (textLines) => {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
 
+  // 텍스트에 색상 클래스 적용
+  const colorize = (line) => {
+    let result = escapeXml(line);
+    // 줄임표 연한색
+    result = result.replace(/(·+)/g, '<tspan class="dots">$1</tspan>');
+    // ++ 초록, -- 빨강 (콤마 포함)
+    result = result.replace(/([\d,]+\+\+)/g, '<tspan class="add">$1</tspan>');
+    result = result.replace(/([\d,]+--)/g, '<tspan class="del">$1</tspan>');
+    // 깃허브 PR 상태
+    result = result.replace(/☐/g, '<tspan class="open">☐</tspan>');
+    result = result.replace(/☑/g, '<tspan class="merged">☑</tspan>');
+    result = result.replace(/⌧/g, '<tspan class="closed">⌧</tspan>');
+    return result;
+  };
+
   const textElements = textLines
     .map((line, i) => {
       const y = textStartY + (i + 1) * lineHeight;
-      return `    <text x="${textEndX}" y="${y}" fill="#1a1a1a" text-anchor="end">${escapeXml(line)}</text>`;
+      return `    <text x="${textEndX}" y="${y}" text-anchor="end">${colorize(line)}</text>`;
     })
     .join('\n');
 
@@ -203,10 +218,30 @@ const generateSvg = async (textLines) => {
     .icon {
       transform-origin: center;
     }
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #F7F8FA; }
+      text { fill: #1a1a1a; }
+      .dots { fill: #a0a0a0; }
+      .add { fill: #1a7f37; }
+      .del { fill: #cf222e; }
+      .open { fill: #1a7f37; }
+      .merged { fill: #8250df; }
+      .closed { fill: #cf222e; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #262C36; }
+      text { fill: #f0f0f0; }
+      .dots { fill: #6e7681; }
+      .add { fill: #3fb950; }
+      .del { fill: #f85149; }
+      .open { fill: #3fb950; }
+      .merged { fill: #a371f7; }
+      .closed { fill: #f85149; }
+    }
     ${iconStyles}
     ${keyframes}
   </style>
-  <rect width="100%" height="100%" fill="#F7F8FA" rx="8"/>
+  <rect class="bg" width="100%" height="100%" rx="8"/>
 ${iconElements}
 ${textElements}
 </svg>`;
