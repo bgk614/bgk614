@@ -6,9 +6,16 @@
   "scripts": {
     "start": "node update_readme.js"
   },
-  "keywords": ["github", "profile", "readme"],
+  "keywords": [
+    "github",
+    "profile",
+    "readme"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "sharp": "^0.34.5"
   }
 }
