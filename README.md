@@ -1,34 +1,8 @@
-```text
-                                       Bogyeong Kim ------------------------------------------
-                                       . Languages:·····················JavaScript, TypeScript
-                                       . Skills:··········Node.js, Express, Prisma, PostgreSQL
-                                       
-                                       - Contact ---------------------------------------------
-                                       . Email:·······························bgk614@gmail.com
-                                       . Email:·····································me@bgk.dev
-        _)/_                           . LinkedIn:······································bgk614
-       (_' <                           . Blog:·································https://bgk.dev
-         )(_                           
-   ,--.''-`'.                          - GitHub Stats ----------------------------------------
-  :.'  :  =- :                         . Contributes:········································8
-  |:   | ._|]|                         . Repositories:······································17
-  |____|_____|                         . Commits:··········································455
- /.:. /-_-_/                           . Issues:············································72
-(.:: / |=|                             . Pull Requests:·····································97
- `--'  |=|                             . Lines of Code:············64,518 (43,705++, 20,813--)
-       |=| Hi,there                    -------------------------------------------------------
-──────────────────────────────────────────────────────────────────────────────────────────────
+![stats](assets/stats.svg)
 
-- Open Source PRs ----------------------
-~ In Progress:·························2
-✓ Merged:······························1
-x Closed:······························0
-----------------------------------------
+**eslint/eslint**<br>
+  ☐ [#20465](https://github.com/eslint/eslint/pull/20465) feat: add `self` to `no-implied-eval` rule<br>
 
-eslint/eslint
-  ~ #20465 feat: add `self` to `no-implied-eval` rule
-
-colinhacks/zod
-  ~ #5632 fix: preserve context immutability in parse functions
-  ✓ #5628 fix: typo in codec.test.ts file
-```
+**colinhacks/zod**<br>
+  ☐ [#5632](https://github.com/colinhacks/zod/pull/5632) fix: preserve context immutability in parse functions<br>
+  ☑ [#5628](https://github.com/colinhacks/zod/pull/5628) fix: typo in codec.test.ts file<br>
