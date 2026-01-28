@@ -1,255 +1,7 @@
-/**
- * README 생성 및 업데이트
- */
-
 const fs = require('fs');
-const sharp = require('sharp');
+const { padLine, sectionHeader, separator, formatNumber } = require('./utils/format');
+const { generateSvg } = require('./svg');
 
-const LINE_WIDTH = 55;
-const ICON_CACHE_PATH = 'cache/icon-cache.json';
-
-/**
- * 라벨과 값 사이를 점(·)으로 패딩
- */
-const padLine = (label, value) => {
-  const totalLen = LINE_WIDTH;
-  const prefixedLabel = '. ' + label;
-  const contentLen = prefixedLabel.length + value.length;
-  const dotsLen = totalLen - contentLen - 2;
-  const dots = '·'.repeat(Math.max(0, dotsLen));
-  return `${prefixedLabel} ${dots} ${value}`;
-};
-
-/**
- * 섹션 헤더 생성
- */
-const sectionHeader = (title) => {
-  const dashes = '-'.repeat(Math.max(0, LINE_WIDTH - title.length - 1));
-  return `${title} ${dashes}`;
-};
-
-/**
- * 구분선 생성
- */
-const separator = () => '-'.repeat(LINE_WIDTH);
-
-/**
- * 숫자에 천 단위 콤마 추가
- */
-const formatNumber = (num) => num.toLocaleString('en-US');
-
-// 아이콘 색상 설정 (0-255)
-const ICON_COLOR = { r: 7, g: 105, b: 218 };
-
-/**
- * 이미지를 지정된 색상으로 변환 후 base64로 인코딩
- */
-const getImageBase64Colored = async (imagePath) => {
-  const { r, g, b } = ICON_COLOR;
-  const img = sharp(imagePath).ensureAlpha();
-  const { data, info } = await img.raw().toBuffer({ resolveWithObject: true });
-
-  // 각 픽셀의 RGB를 원하는 색상으로 치환, 알파는 유지
-  for (let i = 0; i < data.length; i += 4) {
-    data[i] = r;
-    data[i + 1] = g;
-    data[i + 2] = b;
-  }
-
-  const buffer = await sharp(data, {
-    raw: { width: info.width, height: info.height, channels: 4 },
-  })
-    .png()
-    .toBuffer();
-  return buffer.toString('base64');
-};
-
-/**
- * icons 폴더의 모든 PNG 파일 목록 가져오기
- */
-const getIconFiles = () => {
-  const iconsDir = 'assets/icons';
-  const files = fs.readdirSync(iconsDir);
-  return files
-    .filter((file) => file.endsWith('.png'))
-    .map((file) => `${iconsDir}/${file}`);
-};
-
-/**
- * 아이콘 캐시가 유효한지 확인
- */
-const isIconCacheValid = (iconFiles) => {
-  if (!fs.existsSync(ICON_CACHE_PATH)) return false;
-
-  const cacheStat = fs.statSync(ICON_CACHE_PATH);
-  for (const file of iconFiles) {
-    const iconStat = fs.statSync(file);
-    if (iconStat.mtime > cacheStat.mtime) return false;
-  }
-  return true;
-};
-
-/**
- * 아이콘 base64 캐시 로드 또는 생성
- */
-const getIconBase64Cache = async (iconFiles) => {
-  if (isIconCacheValid(iconFiles)) {
-    const cache = JSON.parse(fs.readFileSync(ICON_CACHE_PATH, 'utf8'));
-    console.log('아이콘 캐시 사용');
-    return cache;
-  }
-
-  console.log('아이콘 캐시 생성 중...');
-  const cache = {};
-  for (const file of iconFiles) {
-    cache[file] = await getImageBase64Colored(file);
-  }
-  fs.mkdirSync('cache', { recursive: true });
-  fs.writeFileSync(ICON_CACHE_PATH, JSON.stringify(cache), 'utf8');
-  return cache;
-};
-
-/**
- * 텍스트 라인들을 SVG로 변환 (왼쪽에 움직이는 아이콘들, 오른쪽에 텍스트)
- */
-const generateSvg = async (textLines) => {
-  const lineHeight = 20;
-  const padding = 20;
-  const textPaddingRight = 40; // 텍스트 오른쪽 패딩
-  const width = 1000; // 가로 1000px 고정
-  const textAreaWidth = 500;
-  const textHeight = textLines.length * lineHeight;
-  const contentHeight = textHeight; // 텍스트 높이 기준
-  const height = padding + contentHeight + padding;
-
-  // 텍스트: 오른쪽 정렬 + 수직 중앙 정렬
-  const textEndX = width - textPaddingRight;
-  const textStartY = padding + (contentHeight - textHeight) / 2;
-
-  // 아이콘: 남은 공간(왼쪽)에서 수평/수직 중앙 정렬
-  const iconSpaceWidth = width - textAreaWidth - textPaddingRight;
-
-  const escapeXml = (str) =>
-    str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-
-  // 텍스트에 색상 클래스 적용
-  const colorize = (line) => {
-    let result = escapeXml(line);
-    // 줄임표 연한색
-    result = result.replace(/(·+)/g, '<tspan class="dots">$1</tspan>');
-    // ++ 초록, -- 빨강 (콤마 포함)
-    result = result.replace(/([\d,]+\+\+)/g, '<tspan class="add">$1</tspan>');
-    result = result.replace(/([\d,]+--)/g, '<tspan class="del">$1</tspan>');
-    // 깃허브 PR 상태
-    result = result.replace(/☐/g, '<tspan class="open">☐</tspan>');
-    result = result.replace(/☑/g, '<tspan class="merged">☑</tspan>');
-    result = result.replace(/⌧/g, '<tspan class="closed">⌧</tspan>');
-    return result;
-  };
-
-  const textElements = textLines
-    .map((line, i) => {
-      const y = textStartY + (i + 1) * lineHeight;
-      return `    <text x="${textEndX}" y="${y}" text-anchor="end">${colorize(line)}</text>`;
-    })
-    .join('\n');
-
-  // 모든 아이콘 파일 로드 (캐시 사용)
-  const iconFiles = getIconFiles();
-  const iconCache = await getIconBase64Cache(iconFiles);
-  const cols = 3;
-  const rows = 4;
-  const iconSize = 55;
-  const iconGap = 40;
-  const gridWidth = cols * iconSize + (cols - 1) * iconGap;
-  const gridHeight = rows * iconSize + (rows - 1) * iconGap;
-  const iconStartX = padding + (iconSpaceWidth - gridWidth) / 2; // 수평 중앙
-  const actualIconStartY = padding + (contentHeight - gridHeight) / 2; // 수직 중앙
-
-  // 각 아이콘의 애니메이션 설정 (가로 3개, 세로 4개 배치)
-  const iconConfigs = iconFiles.map((_, i) => {
-    const row = Math.floor(i / cols);
-    const col = i % cols;
-    const startX = iconStartX + col * (iconSize + iconGap);
-    const startY = actualIconStartY + row * (iconSize + iconGap);
-    const moveX = ((i % 3) - 1) * 10;
-    const moveY = (i % 2 === 0 ? 1 : -1) * 5;
-    const duration = 3 + (i % 4);
-    return { startX, startY, moveX, moveY, duration };
-  });
-
-  // CSS 애니메이션 생성
-  const keyframes = iconConfigs
-    .map(
-      (config, i) => `
-    @keyframes float${i} {
-      0%, 100% { transform: translate(0, 0); }
-      50% { transform: translate(${config.moveX}px, ${config.moveY}px); }
-    }`,
-    )
-    .join('\n');
-
-  // 아이콘 이미지 요소 생성 (캐시된 base64 사용)
-  const iconElements = iconFiles
-    .map((file, i) => {
-      const base64 = iconCache[file];
-      const config = iconConfigs[i];
-      return `    <image class="icon icon${i}" x="${config.startX}" y="${config.startY}" width="${iconSize}" height="${iconSize}" href="data:image/png;base64,${base64}"/>`;
-    })
-    .join('\n');
-
-  // 아이콘 스타일 생성
-  const iconStyles = iconConfigs
-    .map((config, i) => {
-      return `.icon${i} { animation: float${i} ${config.duration}s ease-in-out infinite; }`;
-    })
-    .join('\n    ');
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}">
-  <style>
-    text {
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 14px;
-    }
-    .icon {
-      transform-origin: center;
-    }
-    @media (prefers-color-scheme: light) {
-      .bg { fill: #F7F8FA; }
-      text { fill: #1a1a1a; }
-      .dots { fill: #a0a0a0; }
-      .add { fill: #1a7f37; }
-      .del { fill: #cf222e; }
-      .open { fill: #1a7f37; }
-      .merged { fill: #8250df; }
-      .closed { fill: #cf222e; }
-    }
-    @media (prefers-color-scheme: dark) {
-      .bg { fill: #262C36; }
-      text { fill: #f0f0f0; }
-      .dots { fill: #6e7681; }
-      .add { fill: #3fb950; }
-      .del { fill: #f85149; }
-      .open { fill: #3fb950; }
-      .merged { fill: #a371f7; }
-      .closed { fill: #f85149; }
-    }
-    ${iconStyles}
-    ${keyframes}
-  </style>
-  <rect class="bg" width="100%" height="100%" rx="8"/>
-${iconElements}
-${textElements}
-</svg>`;
-};
-
-/**
- * README.md 파일 생성
- */
 const updateReadme = async (stats) => {
   const loc = stats.additions + stats.deletions;
   const locValue = `${formatNumber(loc)} (${formatNumber(
@@ -283,15 +35,17 @@ const updateReadme = async (stats) => {
     padLine('Lines of Code:', locValue),
     '',
     sectionHeader('- Open Source PRs'),
-    padLine('☐ In Progress:', String(ossPRs.open.length)),
+    padLine('☐ Open:', String(ossPRs.open.length)),
     padLine('☑ Merged:', String(ossPRs.merged.length)),
     padLine('⌧ Closed:', String(ossPRs.closed.length)),
     separator(),
   ];
 
-  // SVG 생성 및 저장
-  const svg = await generateSvg(textLines);
-  fs.writeFileSync('assets/stats.svg', svg, 'utf8');
+  // SVG 생성 및 저장 (라이트/다크 모드)
+  const svgLight = await generateSvg(textLines, 'light');
+  const svgDark = await generateSvg(textLines, 'dark');
+  fs.writeFileSync('assets/stats-light.svg', svgLight, 'utf8');
+  fs.writeFileSync('assets/stats-dark.svg', svgDark, 'utf8');
 
   // 레포별로 PR 그룹화
   const allPRs = [
@@ -317,7 +71,10 @@ const updateReadme = async (stats) => {
     }
   }
 
-  const readme = `![stats](assets/stats.svg)
+  const readme = `<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/stats-dark.svg">
+  <img alt="stats" src="assets/stats-light.svg">
+</picture>
 ${prList}`;
 
   fs.writeFileSync('README.md', readme, 'utf8');
