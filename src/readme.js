@@ -15,9 +15,9 @@ const padLine = (label, value) => {
   const totalLen = LINE_WIDTH;
   const prefixedLabel = '. ' + label;
   const contentLen = prefixedLabel.length + value.length;
-  const dotsLen = totalLen - contentLen;
+  const dotsLen = totalLen - contentLen - 2;
   const dots = '·'.repeat(Math.max(0, dotsLen));
-  return `${prefixedLabel}${dots}${value}`;
+  return `${prefixedLabel} ${dots} ${value}`;
 };
 
 /**
