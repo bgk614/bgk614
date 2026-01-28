@@ -30,10 +30,11 @@ const ASCII_ART = [
  */
 function padLine(label, value) {
   const totalLen = LINE_WIDTH;
-  const contentLen = label.length + value.length;
+  const prefixedLabel = '. ' + label;
+  const contentLen = prefixedLabel.length + value.length;
   const dotsLen = totalLen - contentLen;
   const dots = '·'.repeat(Math.max(0, dotsLen));
-  return `${label}${dots}${value}`;
+  return `${prefixedLabel}${dots}${value}`;
 }
 
 /**
