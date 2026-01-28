@@ -65,9 +65,11 @@ const updateReadme = async (stats) => {
   // PR 목록 생성 (마크다운 형식)
   let prList = '';
   for (const [repo, prs] of Object.entries(prsByRepo)) {
-    prList += `\n**${repo}**<br>\n`;
+    const [org, repoName] = repo.split('/');
+    prList += `\n**${org}**/[${repoName}](https://github.com/${repo})<br>\n`;
     for (const pr of prs) {
-      prList += `  ${pr.status} [#${pr.number}](${pr.url}) ${pr.title}<br>\n`;
+      const title = pr.status === '⌧' ? `~~${pr.title}~~` : pr.title;
+      prList += `  ${pr.status} ${title} <sup>[#${pr.number}](${pr.url})</sup><br>\n`;
     }
   }
 
