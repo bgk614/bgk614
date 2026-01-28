@@ -66,7 +66,7 @@ const updateReadme = async (stats) => {
   let prList = '';
   for (const [repo, prs] of Object.entries(prsByRepo)) {
     const [org, repoName] = repo.split('/');
-    prList += `\n**${org}**/[**${repoName}**](https://github.com/${repo})<br>\n`;
+    prList += `\n[**${org}**/**${repoName}**](https://github.com/${repo})<br>\n`;
     for (const pr of prs) {
       const title = pr.status === '⌧' ? `~~${pr.title}~~` : pr.title;
       prList += `  ${pr.status} ${title} <sup>[#${pr.number}](${pr.url})</sup><br>\n`;
