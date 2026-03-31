@@ -48,8 +48,14 @@ const generateSvg = async (textLines, theme = 'light') => {
   const colorize = (line) => {
     let result = escapeXml(line);
     result = result.replace(/(·+)/g, `<tspan fill="${colors.dots}">$1</tspan>`);
-    result = result.replace(/([\d,]+\+\+)/g, `<tspan fill="${colors.add}">$1</tspan>`);
-    result = result.replace(/([\d,]+--)/g, `<tspan fill="${colors.del}">$1</tspan>`);
+    result = result.replace(
+      /([\d,]+\+\+)/g,
+      `<tspan fill="${colors.add}">$1</tspan>`,
+    );
+    result = result.replace(
+      /([\d,]+--)/g,
+      `<tspan fill="${colors.del}">$1</tspan>`,
+    );
     result = result.replace(/☐/g, `<tspan fill="${colors.open}">☐</tspan>`);
     result = result.replace(/☑/g, `<tspan fill="${colors.merged}">☑</tspan>`);
     result = result.replace(/⌧/g, `<tspan fill="${colors.closed}">⌧</tspan>`);
@@ -71,7 +77,7 @@ const generateSvg = async (textLines, theme = 'light') => {
   const iconGap = 40;
   const gridWidth = cols * iconSize + (cols - 1) * iconGap;
   const gridHeight = rows * iconSize + (rows - 1) * iconGap;
-  const iconStartX = padding + (iconSpaceWidth - gridWidth) / 2;
+  const iconStartX = padding + (iconSpaceWidth - gridWidth) / 2 - 15;
   const actualIconStartY = padding + (contentHeight - gridHeight) / 2;
 
   const iconConfigs = iconFiles.map((_, i) => {
@@ -113,7 +119,7 @@ const generateSvg = async (textLines, theme = 'light') => {
   <style>
     text {
       font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 16px;
+      font-size: 15px;
       fill: ${colors.text};
     }
     .icon {
