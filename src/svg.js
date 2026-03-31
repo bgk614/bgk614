@@ -113,7 +113,7 @@ const generateSvg = async (textLines, theme = 'light') => {
   <style>
     text {
       font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 14px;
+      font-size: 16px;
       fill: ${colors.text};
     }
     .icon {
