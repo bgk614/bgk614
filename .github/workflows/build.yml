@@ -11,7 +11,7 @@ on:
       - main
   schedule:
     # 매일 UTC 18:00에 실행 (한국시간 03:00)
-    - cron: "0 18 * * *"
+    - cron: "0 18 * * 6"
 
 permissions:
   contents: write
