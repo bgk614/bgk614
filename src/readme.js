@@ -28,7 +28,7 @@ const updateReadme = async (stats) => {
     sectionHeader('- Contact'),
     padLine('Email:', 'kimbogyeong.dev@gmail.com'),
     padLine('LinkedIn:', 'kimbogyeong'),
-    padLine('Blog:', 'https://kimbogyeong.dev'),
+    padLine('Blog:', 'https://kimbogyeong.com'),
     '',
     sectionHeader('- GitHub Stats'),
     padLine('Contributes:', ossValue),
