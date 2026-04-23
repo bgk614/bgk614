@@ -1,5 +1,10 @@
 const fs = require('fs');
-const { padLine, sectionHeader, separator, formatNumber } = require('./utils/format');
+const {
+  padLine,
+  sectionHeader,
+  separator,
+  formatNumber,
+} = require('./utils/format');
 const { generateSvg } = require('./svg');
 
 const updateReadme = async (stats) => {
@@ -21,10 +26,9 @@ const updateReadme = async (stats) => {
     padLine('Skills:', 'Node.js, Express, Prisma, PostgreSQL'),
     '',
     sectionHeader('- Contact'),
-    padLine('Email:', 'bgk614@gmail.com'),
-    padLine('Email:', 'me@bgk.dev'),
-    padLine('LinkedIn:', 'bgk614'),
-    padLine('Blog:', 'https://bgk.dev'),
+    padLine('Email:', 'kimbogyeong.dev@gmail.com'),
+    padLine('LinkedIn:', 'kimbogyeong'),
+    padLine('Blog:', 'https://kimbogyeong.dev'),
     '',
     sectionHeader('- GitHub Stats'),
     padLine('Contributes:', ossValue),
