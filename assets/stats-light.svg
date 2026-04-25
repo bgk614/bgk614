@@ -109,7 +109,7 @@
     <text x="960" y="280" text-anchor="end">. Commits: <tspan fill="#a0a0a0">········································</tspan> 513</text>
     <text x="960" y="300" text-anchor="end">. Issues: <tspan fill="#a0a0a0">··········································</tspan> 77</text>
     <text x="960" y="320" text-anchor="end">. Pull Requests: <tspan fill="#a0a0a0">··································</tspan> 102</text>
-    <text x="960" y="340" text-anchor="end">. Lines of Code: <tspan fill="#a0a0a0">··········</tspan> 69,877 (<tspan fill="#1a7f37">49,171++</tspan>, <tspan fill="#cf222e">20,706--</tspan>)</text>
+    <text x="960" y="340" text-anchor="end">. Lines of Code: <tspan fill="#a0a0a0">··········</tspan> 75,245 (<tspan fill="#1a7f37">53,388++</tspan>, <tspan fill="#cf222e">21,857--</tspan>)</text>
     <text x="960" y="360" text-anchor="end"></text>
     <text x="960" y="380" text-anchor="end">- Open Source PRs -------------------------------------</text>
     <text x="960" y="400" text-anchor="end">. <tspan fill="#1a7f37">☐</tspan> Open: <tspan fill="#a0a0a0">···········································</tspan> 1</text>
