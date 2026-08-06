@@ -23,7 +23,7 @@ const updateReadme = async (stats) => {
   const textLines = [
     sectionHeader('Bogyeong Kim'),
     padLine('Languages:', 'JavaScript, TypeScript'),
-    padLine('Skills:', 'Node.js, Express, Prisma, PostgreSQL'),
+    padLine('Skills:', 'Express, NestJS, React'),
     '',
     sectionHeader('- Contact'),
     padLine('Email:', 'kimbogyeong.dev@gmail.com'),
