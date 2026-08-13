@@ -31,11 +31,10 @@ const generateSvg = async (textLines, theme = 'light') => {
   const width = 1000;
   const textAreaWidth = 500;
   const textHeight = textLines.length * lineHeight;
-  const contentHeight = textHeight;
-  const height = padding + contentHeight + padding;
+  const height = padding + textHeight + padding;
 
   const textEndX = width - textPaddingRight;
-  const textStartY = padding + (contentHeight - textHeight) / 2;
+  const textStartY = padding;
   const iconSpaceWidth = width - textAreaWidth - textPaddingRight;
 
   const escapeXml = (str) =>
@@ -78,7 +77,7 @@ const generateSvg = async (textLines, theme = 'light') => {
   const gridWidth = cols * iconSize + (cols - 1) * iconGap;
   const gridHeight = rows * iconSize + (rows - 1) * iconGap;
   const iconStartX = padding + (iconSpaceWidth - gridWidth) / 2 - 15;
-  const actualIconStartY = padding + (contentHeight - gridHeight) / 2;
+  const actualIconStartY = padding + (textHeight - gridHeight) / 2;
 
   const iconConfigs = iconFiles.map((_, i) => {
     const row = Math.floor(i / cols);
