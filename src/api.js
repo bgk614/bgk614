@@ -14,13 +14,6 @@ const {
 // 캐시 파일 경로
 const CACHE_FILE = path.join(__dirname, '../cache/loc_cache.json');
 
-// 쿼리 호출 횟수 추적
-const queryCount = {
-  userGetter: 0,
-  graphReposStars: 0,
-  graphCommits: 0,
-};
-
 /**
  * GitHub GraphQL API 공통 요청 함수
  */
@@ -48,8 +41,6 @@ async function simpleRequest(funcName, query, variables) {
  * 사용자 정보 조회
  */
 async function getUserInfo() {
-  queryCount.userGetter++;
-
   const query = `
     query($login: String!) {
       user(login: $login) {
@@ -69,8 +60,6 @@ async function getUserInfo() {
  * 저장소 개수 또는 스타 개수 조회
  */
 async function graphReposStars(countType, ownerAffiliation, cursor = null) {
-  queryCount.graphReposStars++;
-
   const query = `
     query ($owner_affiliation: [RepositoryAffiliation], $login: String!, $cursor: String) {
       user(login: $login) {
@@ -407,5 +396,4 @@ module.exports = {
   getContributionStats,
   getLinesOfCode,
   getOpenSourcePRs,
-  queryCount,
 };

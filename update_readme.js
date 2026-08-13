@@ -11,7 +11,6 @@ const {
   getContributionStats,
   getLinesOfCode,
   getOpenSourcePRs,
-  queryCount,
 } = require('./src/api');
 const { updateReadme } = require('./src/readme');
 
@@ -56,7 +55,7 @@ async function main() {
       openSourcePRs,
     });
 
-    console.log('완료!', queryCount);
+    console.log('완료!');
   } catch (error) {
     console.error('에러 발생:', error.message);
     process.exit(1);
