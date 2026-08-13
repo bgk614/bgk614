@@ -7,7 +7,6 @@ const { validateEnv } = require('./src/config');
 const {
   getUserInfo,
   graphReposStars,
-  getContributedRepos,
   getTotalCommits,
   getContributionStats,
   getLinesOfCode,
@@ -29,7 +28,6 @@ async function main() {
 
     // 저장소 및 스타 수 조회
     const repos = await graphReposStars('repos', ['OWNER']);
-    const contributedRepos = await getContributedRepos();
 
     // 전체 커밋 수 조회
     const totalCommits = await getTotalCommits();
@@ -49,7 +47,6 @@ async function main() {
     // README 업데이트
     updateReadme({
       repos,
-      contributedRepos,
       totalCommits,
       issues: contributionStats.issues,
       pullRequests: contributionStats.pullRequests,

@@ -107,26 +107,6 @@ async function graphReposStars(countType, ownerAffiliation, cursor = null) {
 }
 
 /**
- * 기여한 저장소 수 조회 (본인 소유 + 기여)
- */
-async function getContributedRepos() {
-  const query = `
-    query($login: String!) {
-      user(login: $login) {
-        repositoriesContributedTo(first: 1, contributionTypes: [COMMIT, PULL_REQUEST, ISSUE]) {
-          totalCount
-        }
-      }
-    }
-  `;
-
-  const data = await simpleRequest('getContributedRepos', query, {
-    login: USER_NAME,
-  });
-  return data.data.user.repositoriesContributedTo.totalCount;
-}
-
-/**
  * 전체 커밋 수 조회 (계정 생성 이후 전체)
  */
 async function getTotalCommits() {
@@ -457,7 +437,6 @@ async function getOpenSourcePRs() {
 module.exports = {
   getUserInfo,
   graphReposStars,
-  getContributedRepos,
   getTotalCommits,
   getContributionStats,
   getLinesOfCode,
