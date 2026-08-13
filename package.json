@@ -4,7 +4,8 @@
   "description": "GitHub 프로필 README 자동 생성 스크립트",
   "main": "update_readme.js",
   "scripts": {
-    "start": "node update_readme.js"
+    "start": "node update_readme.js",
+    "format": "prettier --write ."
   },
   "keywords": [
     "github",
@@ -17,5 +18,8 @@
   },
   "dependencies": {
     "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6"
   }
 }
