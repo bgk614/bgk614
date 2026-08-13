@@ -18,4 +18,4 @@ const separator = () => '-'.repeat(LINE_WIDTH);
 
 const formatNumber = (num) => num.toLocaleString('en-US');
 
-module.exports = { LINE_WIDTH, padLine, sectionHeader, separator, formatNumber };
+module.exports = { padLine, sectionHeader, separator, formatNumber };
