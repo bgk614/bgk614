@@ -164,32 +164,28 @@ async function getContributionStats() {
 }
 
 /**
- * 캐시 읽기
+ * JSON 캐시 읽기/저장 (파일 경로만 다르게 재사용)
  */
-function readCache() {
+function readJsonCache(filePath, fallback) {
   try {
-    if (fs.existsSync(CACHE_FILE)) {
-      const data = fs.readFileSync(CACHE_FILE, 'utf8');
-      return JSON.parse(data);
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
     }
   } catch (e) {
-    console.log('캐시 읽기 실패, 새로 계산합니다.');
+    console.log(`캐시 읽기 실패 (${filePath}):`, e.message);
   }
-  return null;
+  return fallback;
 }
 
-/**
- * 캐시 저장
- */
-function saveCache(data) {
+function saveJsonCache(filePath, data) {
   try {
-    const cacheDir = path.dirname(CACHE_FILE);
+    const cacheDir = path.dirname(filePath);
     if (!fs.existsSync(cacheDir)) {
       fs.mkdirSync(cacheDir, { recursive: true });
     }
-    fs.writeFileSync(CACHE_FILE, JSON.stringify(data, null, 2), 'utf8');
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
   } catch (e) {
-    console.log('캐시 저장 실패:', e.message);
+    console.log(`캐시 저장 실패 (${filePath}):`, e.message);
   }
 }
 
@@ -199,7 +195,7 @@ function saveCache(data) {
  */
 async function getLinesOfCode() {
   // 캐시 확인 (24시간 유효)
-  const cache = readCache();
+  const cache = readJsonCache(CACHE_FILE, null);
   const now = Date.now();
   const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -301,7 +297,7 @@ async function getLinesOfCode() {
   }
 
   // 캐시 저장
-  saveCache({ additions, deletions, timestamp: now });
+  saveJsonCache(CACHE_FILE, { additions, deletions, timestamp: now });
 
   return { additions, deletions };
 }
@@ -310,43 +306,13 @@ async function getLinesOfCode() {
 const OSS_PR_CACHE_FILE = path.join(__dirname, '../cache/oss_pr_cache.json');
 
 /**
- * 오픈소스 PR 캐시 읽기
- */
-function readOssPrCache() {
-  try {
-    if (fs.existsSync(OSS_PR_CACHE_FILE)) {
-      const data = fs.readFileSync(OSS_PR_CACHE_FILE, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (e) {
-    console.log('오픈소스 PR 캐시 읽기 실패');
-  }
-  return { merged: [], closed: [] };
-}
-
-/**
- * 오픈소스 PR 캐시 저장
- */
-function saveOssPrCache(data) {
-  try {
-    const cacheDir = path.dirname(OSS_PR_CACHE_FILE);
-    if (!fs.existsSync(cacheDir)) {
-      fs.mkdirSync(cacheDir, { recursive: true });
-    }
-    fs.writeFileSync(OSS_PR_CACHE_FILE, JSON.stringify(data, null, 2), 'utf8');
-  } catch (e) {
-    console.log('오픈소스 PR 캐시 저장 실패:', e.message);
-  }
-}
-
-/**
  * 오픈소스 PR 조회 (포함 목록 방식 + 캐싱)
  * - merged/closed PR은 캐시에서 가져옴
  * - open PR만 API로 조회
  * @returns {Promise<{open: Array, merged: Array, closed: Array}>}
  */
 async function getOpenSourcePRs() {
-  const cache = readOssPrCache();
+  const cache = readJsonCache(OSS_PR_CACHE_FILE, { merged: [], closed: [] });
 
   const query = `
     query($login: String!, $cursor: String) {
@@ -426,7 +392,7 @@ async function getOpenSourcePRs() {
   }
 
   // 캐시 업데이트 (merged/closed만 저장)
-  saveOssPrCache({
+  saveJsonCache(OSS_PR_CACHE_FILE, {
     merged: result.merged,
     closed: result.closed,
   });
